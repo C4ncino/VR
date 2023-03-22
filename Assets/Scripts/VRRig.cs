@@ -35,7 +35,7 @@ public class VRRig : MonoBehaviour
     void FixedUpdate()
     {
         Body.position = headConstraint.position + headBodyOffset;
-        Body.forward = Vector3.ProjectOnPlane(headConstraint.up, Vector3.up);
+        Body.forward = -1 * Vector3.ProjectOnPlane(headConstraint.up, Vector3.up).normalized;
 
         head.Map();
         leftHand.Map();
