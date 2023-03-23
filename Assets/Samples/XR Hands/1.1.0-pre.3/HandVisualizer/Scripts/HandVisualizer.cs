@@ -9,7 +9,10 @@ using UnityEngine.XR.Management;
 namespace UnityEngine.XR.Hands.Samples.VisualizerSample
 {
     public class HandVisualizer : MonoBehaviour
-    {
+    {   
+        public Transform LeftHand_for_3dBody;
+        public Transform RightHand_for_3dBody;
+
         [SerializeField]
         [Tooltip("If this is enabled, this component will enable the Input System internal feature flag 'USE_OPTIMIZED_CONTROLS'. You must have at least version 1.5.0 of the Input System and have its backend enabled for this to take effect.")]
         bool m_UseOptimizedControls = true;
@@ -91,10 +94,10 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
 
         void Awake()
         {
-#if ENABLE_INPUT_SYSTEM
-            if (m_UseOptimizedControls)
-                InputSystem.InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
-#endif // ENABLE_INPUT_SYSTEM
+            #if ENABLE_INPUT_SYSTEM
+                if (m_UseOptimizedControls)
+                    InputSystem.InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
+            #endif // ENABLE_INPUT_SYSTEM
         }
 
         void Update() => TryEnsureInitialized();
@@ -212,7 +215,7 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 return;
 
             // account for changes in the Inspector
-#if UNITY_EDITOR
+            #if UNITY_EDITOR
             var leftHandTracked = subsystem.leftHand.isTracked;
             m_LeftHandGameObjects.ToggleDrawMesh(m_DrawMeshes && leftHandTracked);
             m_LeftHandGameObjects.ToggleDebugDrawJoints(m_DebugDrawJoints && leftHandTracked);
@@ -222,16 +225,16 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
             m_RightHandGameObjects.ToggleDrawMesh(m_DrawMeshes && rightHandTracked);
             m_RightHandGameObjects.ToggleDebugDrawJoints(m_DebugDrawJoints && rightHandTracked);
             m_RightHandGameObjects.SetVelocityType(rightHandTracked ? m_VelocityType : VelocityType.None);
-#endif
+            #endif
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.LeftHandRootPose) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_LeftHandGameObjects.UpdateRootPose(subsystem.leftHand);
+                m_LeftHandGameObjects.UpdateRootPose(subsystem.leftHand, LeftHand_for_3dBody);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.LeftHandJoints) != XRHandSubsystem.UpdateSuccessFlags.None)
                 m_LeftHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.leftHand);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.RightHandRootPose) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_RightHandGameObjects.UpdateRootPose(subsystem.rightHand);
+                m_RightHandGameObjects.UpdateRootPose(subsystem.rightHand, RightHand_for_3dBody);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.RightHandJoints) != XRHandSubsystem.UpdateSuccessFlags.None)
                 m_RightHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.rightHand);
@@ -473,11 +476,14 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                     ToggleRenderers<LineRenderer>(velocityType != VelocityType.None, m_VelocityParents[jointIndex].transform);
             }
 
-            public void UpdateRootPose(XRHand hand)
+            public void UpdateRootPose(XRHand hand, Transform BodyHand)
             {
                 var xform = m_JointXforms[XRHandJointID.Wrist.ToIndex()];
                 xform.localPosition = hand.rootPose.position;
                 xform.localRotation = hand.rootPose.rotation;
+                BodyHand.localPosition = hand.rootPose.position;
+                BodyHand.localRotation = hand.rootPose.rotation;
+                Debug.Log(hand.rootPose.position);
             }
 
             public void UpdateJoints(XROrigin origin, XRHand hand)
