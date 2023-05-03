@@ -10,8 +10,23 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
 {
     public class HandVisualizer : MonoBehaviour
     {   
-        public Transform LeftHand_for_3dBody;
-        public Transform RightHand_for_3dBody;
+        public GameObject bodyLeftHand;
+        public Transform lThumb_tip;
+        public Transform lIndex_tip;
+        public Transform lMid_tip;
+        public Transform lRing_tip;
+        public Transform lPinky_tip;
+
+        private List <Transform> lTips = new List <Transform> ();
+
+        public GameObject bodyRightHand;
+        public Transform rThumb_tip;
+        public Transform rIndex_tip;
+        public Transform rMid_tip;
+        public Transform rRing_tip;
+        public Transform rPinky_tip;
+        
+        private List <Transform> rTips = new List <Transform> ();
 
         [SerializeField]
         [Tooltip("If this is enabled, this component will enable the Input System internal feature flag 'USE_OPTIMIZED_CONTROLS'. You must have at least version 1.5.0 of the Input System and have its backend enabled for this to take effect.")]
@@ -98,6 +113,18 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 if (m_UseOptimizedControls)
                     InputSystem.InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
             #endif // ENABLE_INPUT_SYSTEM
+
+            lTips.Add(lThumb_tip);
+            lTips.Add(lIndex_tip);
+            lTips.Add(lMid_tip);
+            lTips.Add(lRing_tip);
+            lTips.Add(lPinky_tip);
+
+            rTips.Add(rThumb_tip);
+            rTips.Add(rIndex_tip);
+            rTips.Add(rMid_tip);
+            rTips.Add(rRing_tip);
+            rTips.Add(rPinky_tip);
         }
 
         void Update() => TryEnsureInitialized();
@@ -106,6 +133,8 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
         {
             m_LeftHandGameObjects?.OnEnable();
             m_RightHandGameObjects?.OnEnable();
+
+
         }
 
         void OnDisable()
@@ -211,6 +240,9 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
             // we have no game logic depending on the Transforms, so early out here
             // (add game logic before this return here, directly querying from
             // m_Subsystem.leftHand and m_Subsystem.rightHand using GetJoint on each hand)
+            Debug.Log(subsystem.rightHand);
+            Debug.Log(subsystem.leftHand);
+
             if (updateType == XRHandSubsystem.UpdateType.Dynamic)
                 return;
 
@@ -228,16 +260,16 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
             #endif
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.LeftHandRootPose) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_LeftHandGameObjects.UpdateRootPose(subsystem.leftHand, LeftHand_for_3dBody);
+                m_LeftHandGameObjects.UpdateRootPose(subsystem.leftHand);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.LeftHandJoints) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_LeftHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.leftHand);
+                m_LeftHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.leftHand, bodyLeftHand, lTips);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.RightHandRootPose) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_RightHandGameObjects.UpdateRootPose(subsystem.rightHand, RightHand_for_3dBody);
+                m_RightHandGameObjects.UpdateRootPose(subsystem.rightHand);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.RightHandJoints) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_RightHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.rightHand);
+                m_RightHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.rightHand, bodyRightHand, rTips);
         }
 
         class HandGameObjects
@@ -308,6 +340,7 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 m_DrawJointsParent.name = (isLeft ? "Left" : "Right") + "HandDebugDrawJoints";
 
                 AssignJoint(XRHandJointID.Wrist, wristRootXform, m_DrawJointsParent.transform);
+
                 for (int childIndex = 0; childIndex < wristRootXform.childCount; ++childIndex)
                 {
                     var child = wristRootXform.GetChild(childIndex);
@@ -476,24 +509,31 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                     ToggleRenderers<LineRenderer>(velocityType != VelocityType.None, m_VelocityParents[jointIndex].transform);
             }
 
-            public void UpdateRootPose(XRHand hand, Transform BodyHand)
+            public void UpdateRootPose(XRHand hand)
             {
                 var xform = m_JointXforms[XRHandJointID.Wrist.ToIndex()];
                 xform.localPosition = hand.rootPose.position;
                 xform.localRotation = hand.rootPose.rotation;
-                BodyHand.localPosition = hand.rootPose.position;
-                BodyHand.localRotation = hand.rootPose.rotation;
-                Debug.Log(hand.rootPose.position);
             }
 
-            public void UpdateJoints(XROrigin origin, XRHand hand)
+            public void UpdateJoints(XROrigin origin, XRHand hand, GameObject bodyHand, List <Transform> Tips)
             {
                 var originPose = new Pose(origin.transform.position, origin.transform.rotation);
-
                 var wristPose = Pose.identity;
                 UpdateJoint(originPose, hand.GetJoint(XRHandJointID.Wrist), ref wristPose);
                 UpdateJoint(originPose, hand.GetJoint(XRHandJointID.Palm), ref wristPose, false);
 
+                Debug.Log("Holaaaaa");
+                Debug.Log(originPose);
+
+                Transform t_bodyHand = bodyHand.GetComponent<Transform>();
+
+                if (hand.GetJoint(XRHandJointID.Wrist).TryGetPose(out var poseW)){
+                    t_bodyHand.localPosition = poseW.position;
+                    t_bodyHand.localRotation = poseW.rotation;
+                }
+
+                var i = 0;
                 for (int fingerIndex = (int)XRHandFingerID.Thumb;
                     fingerIndex <= (int)XRHandFingerID.Little;
                     ++fingerIndex)
@@ -502,12 +542,29 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                     var fingerId = (XRHandFingerID)fingerIndex;
 
                     int jointIndexBack = fingerId.GetBackJointID().ToIndex();
+
                     for (int jointIndex = fingerId.GetFrontJointID().ToIndex();
                         jointIndex <= jointIndexBack;
                         ++jointIndex)
                     {
-                        if (m_JointXforms[jointIndex] != null)
-                            UpdateJoint(originPose, hand.GetJoint(XRHandJointIDUtility.FromIndex(jointIndex)), ref parentPose);
+                        if (m_JointXforms[jointIndex] != null){
+                            XRHandJoint joint = hand.GetJoint(XRHandJointIDUtility.FromIndex(jointIndex));
+                            UpdateJoint(originPose, joint, ref parentPose);
+                        
+                            if (jointIndex == jointIndexBack){
+                                if (joint.TryGetPose(out var pose)){
+                                    Tips[i].position = pose.GetTransformedBy(originPose).position;
+                                    
+                                    Debug.Log(hand);        
+                                    Debug.Log(joint);                    
+                                    Debug.Log(pose.position);
+                                    Debug.Log(i);
+                                    Debug.Log(Tips[i].position);
+                                    i++;
+                                }
+                            }
+                        }
+
                     }
                 }
             }
