@@ -17,6 +17,8 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
         public Transform lRing_tip;
         public Transform lPinky_tip;
 
+        public Vector3 trackingRotationOffsetLeft;
+
         private List <Transform> lTips = new List <Transform> ();
 
         public GameObject bodyRightHand;
@@ -25,6 +27,8 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
         public Transform rMid_tip;
         public Transform rRing_tip;
         public Transform rPinky_tip;
+
+        public Vector3 trackingRotationOffsetRight;
         
         private List <Transform> rTips = new List <Transform> ();
 
@@ -263,13 +267,13 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 m_LeftHandGameObjects.UpdateRootPose(subsystem.leftHand);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.LeftHandJoints) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_LeftHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.leftHand, bodyLeftHand, lTips);
+                m_LeftHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.leftHand, bodyLeftHand, lTips, trackingRotationOffsetLeft);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.RightHandRootPose) != XRHandSubsystem.UpdateSuccessFlags.None)
                 m_RightHandGameObjects.UpdateRootPose(subsystem.rightHand);
 
             if ((updateSuccessFlags & XRHandSubsystem.UpdateSuccessFlags.RightHandJoints) != XRHandSubsystem.UpdateSuccessFlags.None)
-                m_RightHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.rightHand, bodyRightHand, rTips);
+                m_RightHandGameObjects.UpdateJoints(m_Origin, m_Subsystem.rightHand, bodyRightHand, rTips, trackingRotationOffsetRight);
         }
 
         class HandGameObjects
@@ -516,7 +520,7 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 xform.localRotation = hand.rootPose.rotation;
             }
 
-            public void UpdateJoints(XROrigin origin, XRHand hand, GameObject bodyHand, List <Transform> Tips)
+            public void UpdateJoints(XROrigin origin, XRHand hand, GameObject bodyHand, List <Transform> Tips, Vector3 trackingRotationOffset)
             {
                 var originPose = new Pose(origin.transform.position, origin.transform.rotation);
                 var wristPose = Pose.identity;
@@ -555,11 +559,17 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                                 if (joint.TryGetPose(out var pose)){
                                     Tips[i].position = pose.GetTransformedBy(originPose).position;
                                     
-                                    Debug.Log(hand);        
-                                    Debug.Log(joint);                    
-                                    Debug.Log(pose.position);
-                                    Debug.Log(i);
-                                    Debug.Log(Tips[i].position);
+                                    Debug.Log(Tips[i].right);
+                                    
+                                    // Tips[i].rotation = pose.rotation * Quaternion.Euler(trackingRotationOffset);   
+                                    
+                                    Debug.Log(pose.forward);
+
+                                    // Debug.Log(hand);        
+                                    // Debug.Log(joint);                    
+                                    // Debug.Log(pose.position);
+                                    // Debug.Log(i);
+                                    // Debug.Log(Tips[i].position);
                                     i++;
                                 }
                             }
