@@ -11,26 +11,15 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
     public class HandVisualizer : MonoBehaviour
     {   
         public GameObject bodyLeftHand;
-        public Transform lThumb_tip;
-        public Transform lIndex_tip;
-        public Transform lMid_tip;
-        public Transform lRing_tip;
-        public Transform lPinky_tip;
 
+        public GameObject lTips;
         public Vector3 trackingRotationOffsetLeft;
 
-        private List <Transform> lTips = new List <Transform> ();
-
         public GameObject bodyRightHand;
-        public Transform rThumb_tip;
-        public Transform rIndex_tip;
-        public Transform rMid_tip;
-        public Transform rRing_tip;
-        public Transform rPinky_tip;
 
+        public GameObject rTips;
         public Vector3 trackingRotationOffsetRight;
         
-        private List <Transform> rTips = new List <Transform> ();
 
         [SerializeField]
         [Tooltip("If this is enabled, this component will enable the Input System internal feature flag 'USE_OPTIMIZED_CONTROLS'. You must have at least version 1.5.0 of the Input System and have its backend enabled for this to take effect.")]
@@ -117,18 +106,6 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 if (m_UseOptimizedControls)
                     InputSystem.InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
             #endif // ENABLE_INPUT_SYSTEM
-
-            lTips.Add(lThumb_tip);
-            lTips.Add(lIndex_tip);
-            lTips.Add(lMid_tip);
-            lTips.Add(lRing_tip);
-            lTips.Add(lPinky_tip);
-
-            rTips.Add(rThumb_tip);
-            rTips.Add(rIndex_tip);
-            rTips.Add(rMid_tip);
-            rTips.Add(rRing_tip);
-            rTips.Add(rPinky_tip);
         }
 
         void Update() => TryEnsureInitialized();
@@ -520,7 +497,7 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                 xform.localRotation = hand.rootPose.rotation;
             }
 
-            public void UpdateJoints(XROrigin origin, XRHand hand, GameObject bodyHand, List <Transform> Tips, Vector3 trackingRotationOffset)
+            public void UpdateJoints(XROrigin origin, XRHand hand, GameObject bodyHand, GameObject Tips, Vector3 trackingRotationOffset)
             {
                 var originPose = new Pose(origin.transform.position, origin.transform.rotation);
                 var wristPose = Pose.identity;
@@ -557,13 +534,21 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                         
                             if (jointIndex == jointIndexBack){
                                 if (joint.TryGetPose(out var pose)){
-                                    Tips[i].position = pose.GetTransformedBy(originPose).position;
-                                    
-                                    Debug.Log(Tips[i].right);
-                                    
-                                    // Tips[i].rotation = pose.rotation * Quaternion.Euler(trackingRotationOffset);   
-                                    
-                                    Debug.Log(pose.forward);
+                                    Transform tipTarget = Tips.transform.GetChild(i).transform.GetChild(0).GetComponent<Transform>();
+                                    Transform tipHint = Tips.transform.GetChild(i).transform.GetChild(1).GetComponent<Transform>();
+
+                                    Vector3 differenceHintandtarget =  tipTarget.position - tipHint.position;
+
+                                    tipTarget.position = pose.GetTransformedBy(originPose).position;
+                                    tipTarget.rotation = pose.rotation * Quaternion.Euler(trackingRotationOffset);   
+
+                                    tipHint.position = tipTarget.position - differenceHintandtarget;
+
+                                    Debug.Log(tipTarget.position);
+                                    Debug.Log(tipHint.position);
+
+
+                                    // Debug.Log(pose.forward);
 
                                     // Debug.Log(hand);        
                                     // Debug.Log(joint);                    
