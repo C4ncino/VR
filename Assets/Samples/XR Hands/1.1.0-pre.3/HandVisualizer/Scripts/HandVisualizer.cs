@@ -535,17 +535,17 @@ namespace UnityEngine.XR.Hands.Samples.VisualizerSample
                             if (jointIndex == jointIndexBack){
                                 if (joint.TryGetPose(out var pose)){
                                     Transform tipTarget = Tips.transform.GetChild(i).transform.GetChild(0).GetComponent<Transform>();
-                                    Transform tipHint = Tips.transform.GetChild(i).transform.GetChild(1).GetComponent<Transform>();
+                                    // Transform tipHint = Tips.transform.GetChild(i).transform.GetChild(1).GetComponent<Transform>();
 
-                                    Vector3 differenceHintandtarget =  tipTarget.position - tipHint.position;
+                                    // Vector3 differenceHintandtarget =  tipHint.position - tipTarget.position;
 
                                     tipTarget.position = pose.GetTransformedBy(originPose).position;
-                                    tipTarget.rotation = pose.rotation * Quaternion.Euler(trackingRotationOffset);   
+                                    // tipHint.position = tipTarget.position + differenceHintandtarget;
 
-                                    tipHint.position = tipTarget.position - differenceHintandtarget;
+                                    tipTarget.rotation = pose.rotation * Quaternion.Euler(trackingRotationOffset);
+
 
                                     Debug.Log(tipTarget.position);
-                                    Debug.Log(tipHint.position);
 
 
                                     // Debug.Log(pose.forward);
