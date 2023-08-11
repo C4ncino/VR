@@ -13,6 +13,7 @@ public class UI_Player : MonoBehaviour
     // * Textos
     public TMP_Text rightText;
     public TMP_Text leftText;
+    public TMP_Text distanceText;
     // * Paneles de Advertencia
     public GameObject rightLight;
     public GameObject leftLight;
@@ -28,10 +29,11 @@ public class UI_Player : MonoBehaviour
     void Start()
     {
 
-        // onEndPoint = false;
+        onEndPoint = false;
         Debug.Log("Hola");
-        // Renderer right = rightLight.GetComponent<Renderer>();
-        // Renderer left = leftLight.GetComponent<Renderer>();
+        Debug.Log(rightText.text);
+        Debug.Log(leftText.text);
+
     }
 
     // Update is called once per frame
@@ -41,53 +43,52 @@ public class UI_Player : MonoBehaviour
         Image left = leftLight.GetComponent<Image>();
         
         float headDeviation = PlayerHead.position.x;
-        Debug.Log(headDeviation);
-        if (headDeviation == 0){
-            right.color = empty;
-            left.color = empty;
-            
-            rightText.text = "";
-            leftText.text = "";
-        }
-        else if (headDeviation < 0){
+        //Debug.Log(headDeviation);
+        if (headDeviation > 0.5){
             right.color = empty;
             left.color = red;
 
             rightText.text = "";
             leftText.text = "Estás muy cerca de tu izquierda";
         }
-        else if (headDeviation > 0){
+        else if (headDeviation < -0.5){
             right.color = red;
             left.color = empty;
 
             rightText.text = "Estás muy cerca de tu derecha";
             leftText.text = "";
         }
-        // if (!onEndPoint)
-        // {
-        //     float dist = Vector3.Distance(puntoFinal.position, this.transform.position);
-        //     int distExacta = (int)dist;
-        //     distanciaTexto.text = distExacta.ToString() + " metros";
-        //     panelIndicaciones.SetActive(true);
-        // }
-        // else
-        // {
-        //     distanciaTexto.text = " ";
-        //     panelIndicaciones.SetActive(false);
-        //     // SceneManager.LoadScene("SampleScene");
-        // }
+        else {
+            right.color = empty;
+            left.color = empty;
+
+            rightText.text = "";
+            leftText.text = "";
+        }
+
+        if (!onEndPoint)
+        {
+            float dist = Vector3.Distance(puntoFinal.position, this.transform.position);
+            int distExacta = (int)dist;
+            distanceText.text = distExacta.ToString() + " metros";
+        }
+        else
+        {
+            distanceText.text = " ";
+            // SceneManager.LoadScene("SampleScene");
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        // if(collision.gameObject.name == "PuntoFinal")
-        // {
-        //     onEndPoint = true;
-        // }
-        // else
-        // {
-        //     onEndPoint = false;
-        // }
+        if(collision.gameObject.name == "PuntoFinal")
+        {
+            onEndPoint = true;
+        }
+        else
+        {
+             onEndPoint = false;
+        }
     }
     /*
     private void OnTriggerEnter(Collider other)
