@@ -1,3 +1,4 @@
+
 # VR
 
 Aquí se encuentran las bases para el uso de VR con unity v21.3.17
@@ -45,7 +46,7 @@ Ademas dentro de la carpeta se encuentran los scripts generados adicionales y lo
 
 3. **TestingInputSystem.cs**: Este script parece estar relacionado con pruebas o desarrollo del sistema de entrada del juego para probar la entrada de teclado.
 
-4. **VRRig.cs**: Un script relacionado con la realidad virtual en el juego.
+4. **VRRig.cs**: Este script se encarga de poder añadir un modelo 3d de personaje al jugador.
 
 ## Archivos de Unity Input System
 
@@ -54,3 +55,12 @@ Ademas dentro de la carpeta se encuentran los scripts generados adicionales y lo
 ## Archivos de UI
 
 - **UI_Player.cs**: Este script se usa para controlar la UI del jugador.
+
+## Apoyos
+
+Por otro lado se puede tener ayuda extra mediante los siguientes tutoriales de [Valem en YouTube](https://www.youtube.com/@ValemTutorials/videos)
+
+
+## Autor
+
+[@C4ncino](https://www.github.com/C4ncino)
